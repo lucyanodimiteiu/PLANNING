@@ -5,6 +5,8 @@ Citeste emailuri de planning de la alertmydriver.com,
 le traduce in romana si trimite rezumat pe Telegram.
 """
 
+import sys
+sys.stdout.reconfigure(line_buffering=True)
 import imaplib
 import email
 import os
@@ -41,12 +43,17 @@ def save_processed(ids: set):
 # ── Conectare Gmail IMAP ─────────────────────────────────────────────────────
 def fetch_new_emails(processed_ids: set) -> list:
     """Returneaza emailuri noi de la alertmydriver.com"""
+    print("Conectare la IMAP...")
     mail = imaplib.IMAP4_SSL("imap.gmail.com")
+    print("Logare...")
     mail.login(GMAIL_USER, GMAIL_PASSWORD)
+    print("Selectare inbox...")
     mail.select("inbox")
 
+    print("Cautare emailuri...")
     _, data = mail.search(None, 'FROM', '"no-reply@alertmydriver.com"')
     all_ids = data[0].split()
+    print(f"Gasite {len(all_ids)} emailuri de la alertmydriver.")
 
     new_emails = []
     for uid in reversed(all_ids[-20:]):  # ultimele 20, cele mai noi primul
