@@ -13,6 +13,13 @@ import os
 import json
 import re
 import requests
+import signal
+
+def timeout_handler(signum, frame):
+    print("Script timeout reached!")
+    sys.exit(1)
+signal.signal(signal.SIGALRM, timeout_handler)
+signal.alarm(30)  # 30 seconds max for testing
 from email.header import decode_header
 from datetime import datetime, timezone
 
