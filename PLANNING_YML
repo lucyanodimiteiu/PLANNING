@@ -1,0 +1,39 @@
+name: Planning Bot - Alert My Driver → Telegram
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+jobs:
+  run-bot:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Restore processed IDs cache
+        uses: actions/cache@v4
+        with:
+          path: processed_ids.json
+          key: processed-ids-${{ github.run_id }}
+          restore-keys: |
+            processed-ids-
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Run planning bot
+        env:
+          GMAIL_USER:          ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD:  ${{ secrets.GMAIL_APP_PASSWORD }}
+          TELEGRAM_BOT_TOKEN:  ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID:    ${{ secrets.TELEGRAM_CHAT_ID }}
+          DEEPSEEK_API_KEY:    ${{ secrets.DEEPSEEK_API_KEY }}
+        run: python planning_bot.py
