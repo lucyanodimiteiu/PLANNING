@@ -13,13 +13,6 @@ import os
 import json
 import re
 import requests
-import signal
-
-def timeout_handler(signum, frame):
-    print("Script timeout reached!")
-    sys.exit(1)
-signal.signal(signal.SIGALRM, timeout_handler)
-signal.alarm(30)  # 30 seconds max for testing
 from email.header import decode_header
 from datetime import datetime, timezone
 
@@ -63,7 +56,7 @@ def fetch_new_emails(processed_ids: set) -> list:
     print(f"Gasite {len(all_ids)} emailuri de la alertmydriver.")
 
     new_emails = []
-    for uid in reversed(all_ids[-20:]):  # ultimele 20, cele mai noi primul
+    for uid in reversed(all_ids[-5:]):  # ultimele 5, cele mai noi primul
         uid_str = uid.decode()
         if uid_str in processed_ids:
             continue
