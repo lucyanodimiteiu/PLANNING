@@ -1,6 +1,8 @@
 name: Planning Bot - Alert My Driver → Telegram
 
 on:
+  push:
+    branches: [ "main" ]
   schedule:
     - cron: "*/15 * * * *"
   workflow_dispatch:

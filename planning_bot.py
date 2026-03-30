@@ -27,8 +27,11 @@ PROCESSED_FILE = "processed_ids.json"
 # ── Incarca ID-urile deja procesate ─────────────────────────────────────────
 def load_processed():
     if os.path.exists(PROCESSED_FILE):
-        with open(PROCESSED_FILE, "r") as f:
-            return set(json.load(f))
+        try:
+            with open(PROCESSED_FILE, "r") as f:
+                return set(json.load(f))
+        except Exception:
+            return set()
     return set()
 
 def save_processed(ids: set):
@@ -62,9 +65,10 @@ def fetch_new_emails(processed_ids: set) -> list:
         body = ""
         if msg.is_multipart():
             for part in msg.walk():
-                if part.get_content_type() == "text/plain":
+                if part.get_content_type() in ["text/plain", "text/html"]:
                     body = part.get_payload(decode=True).decode("utf-8", errors="replace")
-                    break
+                    if part.get_content_type() == "text/plain":
+                        break
         else:
             body = msg.get_payload(decode=True).decode("utf-8", errors="replace")
 
@@ -112,7 +116,7 @@ Continut email:
 Scrie rezumatul in romana, maxim 15 randuri."""
 
     response = requests.post(
-        "https://api.deepseek.com/chat/completions",
+        "https://api.deepseek.com/v1/chat/completions",
         headers={
             "Authorization": f"Bearer {DEEPSEEK_KEY}",
             "Content-Type": "application/json",
