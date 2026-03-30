@@ -111,16 +111,22 @@ def summarize_with_deepseek(subject: str, body: str) -> str:
     """Trimite emailul la DeepSeek si returneaza un rezumat in romana."""
     prompt = f"""Esti asistentul unui sofer de camion roman care lucreaza in Olanda.
 Primesti un email de planning de transport in limba olandeza.
-Traduce si rezuma in romana, clar si concis, pentru un sofer.
-Pastreaza toate detaliile importante: ora de start, locatii, numar camion, remarci speciale.
-Foloseste emoji-uri relevante pentru claritate.
+Traduce si rezuma in romana, clar si concis, sub forma de lista, structurat pe curse (Cursa 1, Cursa 2 etc.).
+
+REGULI OBLIGATORII:
+1. Pastreaza toate detaliile: ora de start, numar camion, trailer, remarci speciale.
+2. Pentru absolut FIECARE adresa de INCARCARE sau DESCARCARE, respecta STRICT urmatorul format:
+   [Numele Companiei], [Strada si Numarul], [Cod Postal si Localitatea], [Numele Tarii in romana] [Steagul Tarii Emoji]
+   Exemplu: Trans-Imex, Doornhoek 4025, 5465 TD Veghel, Olanda 🇳🇱
+3. Foloseste emoji-uri relevante (🚚 pentru incarcare, 📦 pentru descarcare).
+4. Daca exista detalii despre marfa (ex: nr de coli, greutate, referinte), adauga-le la finalul fiecarei curse.
 
 Subiect email: {subject}
 
 Continut email:
 {body}
 
-Scrie rezumatul in romana, maxim 15 randuri."""
+Scrie rezumatul in romana, usor de citit pe telefon."""
 
     response = requests.post(
         "https://api.deepseek.com/v1/chat/completions",
