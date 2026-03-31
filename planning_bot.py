@@ -156,6 +156,19 @@ def send_telegram(text: str):
         "parse_mode": "HTML",
     }
     r = requests.post(url, json=payload, timeout=15)
+    
+    # Auto-handle supergroup migration
+    if r.status_code == 400:
+        try:
+            err_data = r.json()
+            if err_data.get("parameters", {}).get("migrate_to_chat_id"):
+                new_chat_id = err_data["parameters"]["migrate_to_chat_id"]
+                print(f"Chat migrated! Retrying with new chat_id: {new_chat_id}")
+                payload["chat_id"] = new_chat_id
+                r = requests.post(url, json=payload, timeout=15)
+        except Exception:
+            pass
+
     if r.status_code != 200:
         print(f"Telegram error response: {r.text}")
     r.raise_for_status()
