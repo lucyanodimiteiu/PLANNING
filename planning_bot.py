@@ -120,6 +120,8 @@ REGULI OBLIGATORII:
    Exemplu: Trans-Imex, Doornhoek 4025, 5465 TD Veghel, Olanda 🇳🇱
 3. Foloseste emoji-uri relevante (🚚 pentru incarcare, 📦 pentru descarcare).
 4. Daca exista detalii despre marfa (ex: nr de coli, greutate, referinte), adauga-le la finalul fiecarei curse.
+5. NU folosi Markdown (** sau *). Daca vrei sa ingrosi un text, foloseste taguri HTML: <b>text</b>.
+6. Asigura-te ca nu pui taguri HTML neinchise (ex: < sau > singure).
 
 Subiect email: {subject}
 
@@ -154,22 +156,40 @@ def send_telegram(text: str):
         "parse_mode": "HTML",
     }
     r = requests.post(url, json=payload, timeout=15)
+    if r.status_code != 200:
+        print(f"Telegram error response: {r.text}")
     r.raise_for_status()
 
 # ── Construieste mesajul Telegram ────────────────────────────────────────────
 def build_telegram_message(subject: str, parsed: dict, summary: str, date: str) -> str:
+    import html
+    s_sub = html.escape(subject)
+    s_date = html.escape(str(date))
+    s_k = html.escape(parsed['kenteken'])
+    s_t = html.escape(parsed['trailer'])
+    s_st = html.escape(parsed['starttijd'])
+    s_l = html.escape(parsed['laden'])
+    s_lo = html.escape(parsed['lossen'])
+    s_o = html.escape(parsed['opmerking'])
+    
     lines = [
-        f"📋 <b>PLANNING NOU — {subject}</b>",
-        f"📅 Primit: {date}",
+        f"📋 <b>PLANNING NOU — {s_sub}</b>",
+        f"📅 Primit: {s_date}",
         "",
-        f"🚛 <b>Camion:</b> {parsed['kenteken']}",
-        f"🔗 <b>Trailer:</b> {parsed['trailer']}",
-        f"⏰ <b>Start:</b> {parsed['starttijd']}",
-        f"📦 <b>Incarcare:</b> {parsed['laden']}",
-        f"📍 <b>Descarcare:</b> {parsed['lossen']}",
+        f"🚛 <b>Camion:</b> {s_k}",
+        f"🔗 <b>Trailer:</b> {s_t}",
+        f"⏰ <b>Start:</b> {s_st}",
+        f"📦 <b>Incarcare:</b> {s_l}",
+        f"📍 <b>Descarcare:</b> {s_lo}",
     ]
-    if parsed["opmerking"] != "—":
-        lines.append(f"⚠️ <b>Observatie:</b> {parsed['opmerking']}")
+    if s_o != "—":
+        lines.append(f"⚠️ <b>Observatie:</b> {s_o}")
+
+    # Fix potential markdown ** leakage from deepseek (convert to <b>)
+    import re
+    summary = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', summary)
+    
+    # Telegram uraste tagurile neinchise sau ciudate. Daca mai sunt bold markdown sau altele, macar nu sunt taguri HTML.
 
     lines += [
         "",
