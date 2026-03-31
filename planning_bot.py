@@ -142,7 +142,7 @@ Scrie rezumatul in romana, usor de citit pe telefon."""
             "max_tokens": 500,
             "temperature": 0.3,
         },
-        timeout=30,
+        timeout=90,
     )
     response.raise_for_status()
     return response.json()["choices"][0]["message"]["content"].strip()
