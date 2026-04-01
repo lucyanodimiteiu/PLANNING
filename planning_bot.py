@@ -13,6 +13,7 @@ import os
 import json
 import re
 import requests
+import pytz
 from email.header import decode_header
 from datetime import datetime, timezone
 
@@ -79,11 +80,23 @@ def fetch_new_emails(processed_ids: set) -> list:
         else:
             body = msg.get_payload(decode=True).decode("utf-8", errors="replace")
 
+        email_date = msg["Date"]
+        parsed_date = email.utils.parsedate_to_datetime(email_date)
+        
+        import pytz
+        amsterdam_tz = pytz.timezone('Europe/Amsterdam')
+        
+        if parsed_date.tzinfo is None:
+            parsed_date = pytz.utc.localize(parsed_date)
+            
+        local_date = parsed_date.astimezone(amsterdam_tz)
+        formatted_local_date = local_date.strftime("%d-%m-%Y %H:%M:%S")
+
         new_emails.append({
             "uid": uid_str,
             "subject": subject,
             "body": body.strip(),
-            "date": msg["Date"],
+            "date": formatted_local_date,
         })
 
     mail.logout()
